@@ -10,10 +10,6 @@ import pandas as pd
 import requests
 from PIL import Image
 
-# =========================
-# CONFIG
-# =========================
-start_time = time.perf_counter()
 
 IMAGES_ROOT = Path(r"C:\Users\kazim\PycharmProjects\notebook\otodom_images_best")
 OUT_IMAGE_CSV = Path("image_scores.csv")
@@ -219,7 +215,6 @@ def ask_model(image_path):
     result = response.json()
     text = result["message"]["content"]
     return parse_json_text(text)
-
 
 def compute_photo_score(data):
     is_interior = safe_bool(data.get("is_interior"))
@@ -452,12 +447,10 @@ def build_listing_scores(image_df):
 
     return pd.DataFrame(rows)
 
-
 def atomic_write_csv(df, path):
     tmp_path = path.with_suffix(path.suffix + ".tmp")
     df.to_csv(tmp_path, index=False)
     tmp_path.replace(path)
-
 
 def save_progress(rows, reason="progress"):
     image_df = pd.DataFrame(rows)
@@ -469,7 +462,6 @@ def save_progress(rows, reason="progress"):
         flush=True
     )
     return image_df, listing_df
-
 
 def test_ollama():
     payload = {
@@ -500,13 +492,11 @@ def test_ollama():
     parsed = parse_json_text(content)
     return parsed.get("ok") is True
 
-
 def list_image_files(listing_dir):
     return sorted([
         p for p in listing_dir.iterdir()
         if p.is_file() and p.suffix.lower() in [".jpg", ".jpeg", ".png", ".webp"]
     ])
-
 
 def estimate_total_pending_images(listing_dirs, done):
     total = 0
@@ -515,7 +505,6 @@ def estimate_total_pending_images(listing_dirs, done):
             if (listing_dir.name, img_path.name) not in done:
                 total += 1
     return total
-
 
 def request_stop(signum, frame):
     global stop_requested
@@ -526,16 +515,12 @@ def request_stop(signum, frame):
         signame = str(signum)
     print(f"\nStop requested by signal: {signame}. Will save progress and exit cleanly.", flush=True)
 
-
-# Register stop handlers
 signal.signal(signal.SIGINT, request_stop)
 if hasattr(signal, "SIGTERM"):
     signal.signal(signal.SIGTERM, request_stop)
 
 
-# =========================
-# MAIN
-# =========================
+
 print("Checking Ollama...", flush=True)
 try:
     ok = test_ollama()
